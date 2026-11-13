@@ -10,6 +10,22 @@ function findAll() {
   return Book.find().sort({ title: 1 }).lean();
 }
 
+function create(book) {
+  return Book.create(book);
+}
+
+function findById(id) {
+  return Book.findById(id).lean();
+}
+
+function borrow(id, studentName) {
+  return Book.findOneAndUpdate(
+    { _id: id, borrowedBy: null },
+    { $set: { borrowedBy: studentName, borrowedAt: new Date() } },
+    { new: true, lean: true }
+  );
+}
+
 function seedBooks() {
   return Promise.all(
     initialBooks.map((book) =>
@@ -18,4 +34,4 @@ function seedBooks() {
   );
 }
 
-module.exports = { findAll, seedBooks };
+module.exports = { findAll, create, findById, borrow, seedBooks };
