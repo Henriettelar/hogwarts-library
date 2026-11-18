@@ -1,41 +1,55 @@
 const bookRepository = require('../repositories/bookRepository');
 
+function createError(message, statusCode) {
+  const error = new Error(message);
+  error.statusCode = statusCode;
+  return error;
+}
+
 function listBooks() {
   return bookRepository.findAll();
 }
 
-function createBook(book) {
-  return bookRepository.create({title: book && book.title});
-}
-
-async function borrowBook(id, studentName) {
-  if (typeof studentName !== 'string' || !studentName.trim()) {
-    const error = new Error('Student name is required');
-    error.statusCode = 400;
-    throw error;
-  }
-
+async function getBook(id) {
   if (!/^[0-9a-fA-F]{24}$/.test(id)) {
-    const error = new Error('Book not found');
-    error.statusCode = 404;
-    throw error;
+    throw createError('Book not found', 404);
   }
 
   const book = await bookRepository.findById(id);
   if (!book) {
-    const error = new Error('Book not found');
-    error.statusCode = 404;
-    throw error;
+    throw createError('Book not found', 404);
   }
 
-  const borrowedBook = await bookRepository.borrow(id, studentName.trim());
-  if (!borrowedBook) {
-    const error = new Error('Book is already borrowed');
-    error.statusCode = 409;
+  return book;
+}
+
+async function createBook(book) {
+  if (!book || typeof book.title !== 'string' || !book.title.trim()) {
+    throw createError('Title is required', 400);
+  }
+
+  try {
+    return await bookRepository.create({ title: book.title.trim() });
+  } catch (error) {
+    if (error.code === 11000) {
+      throw createError('A book with this title already exists', 409);
+    }
     throw error;
+  }
+}
+
+async function borrowBook(id, studentName) {
+  if (typeof studentName !== 'string' || !studentName.trim()) {
+    throw createError('Student name is required', 400);
+  }
+
+  const book = await getBook(id);
+  const borrowedBook = await bookRepository.borrow(book._id, studentName.trim());
+  if (!borrowedBook) {
+    throw createError('Book is already borrowed', 409);
   }
 
   return borrowedBook;
 }
 
-module.exports = { listBooks, createBook, borrowBook };
+module.exports = { listBooks, getBook, createBook, borrowBook };
