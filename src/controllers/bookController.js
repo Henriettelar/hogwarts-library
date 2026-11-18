@@ -9,6 +9,15 @@ async function getBooks(request, response, next) {
   }
 }
 
+async function getBook(request, response, next) {
+  try {
+    const book = await bookService.getBook(request.params.id);
+    response.json(book);
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function createBook(request, response, next) {
   try {
     const book = await bookService.createBook(request.body);
@@ -30,4 +39,4 @@ async function borrowBook(request, response, next) {
   }
 }
 
-module.exports = { getBooks, createBook, borrowBook };
+module.exports = { getBooks, getBook, createBook, borrowBook };
