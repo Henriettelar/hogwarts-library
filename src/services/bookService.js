@@ -5,11 +5,11 @@ function listBooks() {
 }
 
 function createBook(book) {
-  return bookRepository.create(book);
+  return bookRepository.create({title: book && book.title});
 }
 
 async function borrowBook(id, studentName) {
-  if (!studentName || !studentName.trim()) {
+  if (typeof studentName !== 'string' || !studentName.trim()) {
     const error = new Error('Student name is required');
     error.statusCode = 400;
     throw error;
