@@ -7,6 +7,15 @@ const bookSchema = new mongoose.Schema(
       required: true,
       unique: true,
       trim: true
+    },
+    borrowedBy: {
+      type: String,
+      default: null,
+      trim: true
+    },
+    borrowedAt: {
+      type: Date,
+      default: null
     }
   },
   { timestamps: true }
